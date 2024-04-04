@@ -8,7 +8,7 @@
 PinControl::PinControl(uint8_t pin){
   this->pin = pin;
   pinMode(pin, OUTPUT);
-  setLimits(0.0, 0.0);
+  setLimits(0.0, 1.0);
 }
 
 PinControl::PinControl(uint8_t pin, float v1, float v2){
@@ -84,7 +84,7 @@ float PinControl::last_control(){
 PinMeasure::PinMeasure(uint8_t pin, bool pullup){
   this->pin = pin;
   pinMode(pin, pullup ? INPUT_PULLUP : INPUT);
-  setLimits(0.0, 0.0);
+  setLimits(0.0, 1.0);
 }
 
 PinMeasure::PinMeasure(uint8_t pin, float v1, float v2, bool pullup){

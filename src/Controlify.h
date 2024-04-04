@@ -349,25 +349,4 @@ public:
 #endif
 
 
-// ==================================================
-// Comm
-// ==================================================
-
-#if defined(UNO) || defined(MEGA) || defined(GIGA)
-class SerialComm {
-public:
-  SerialComm() = delete;
-  ~SerialComm() = delete;
-
-  static HardwareSerial* port(uint8_t channel);
-
-  static void start(HardwareSerial *hwserial, uint32_t baudrate, uint8_t config = SERIAL_8N1);
-  static void start(uint8_t channel, uint32_t baudrate, uint8_t config = SERIAL_8N1);
-
-  static void close(HardwareSerial *hwserial);
-  static void close(uint8_t channel);
-};
-#endif
-
-
 #endif //CONTROLIFY_H
