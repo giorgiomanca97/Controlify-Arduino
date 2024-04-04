@@ -7,19 +7,14 @@
 #endif
 
 #if defined(ARDUINO_AVR_MEGA2560)
-#define MEGA
+#define ARDUINO_AVR_MEGA2560
 #endif
 
 #if defined(ARDUINO_AVR_UNO)
-#define UNO
+#define ARDUINO_AVR_UNO
 #endif
 
 #define UNUSED(arg) (void)(arg)
-
-#define PIN_CONTROL_EXTRA_FEATURES
-#define PIN_CONTROL_STORE_VALUES
-#define PIN_MEASURE_EXTRA_FEATURES
-#define PIN_MEASURE_STORE_VALUES
 
 #include <inttypes.h>
 #include <limits.h>
@@ -153,17 +148,28 @@ private:
 // Pin
 // ==================================================
 
+#define PIN_CONTROL_EXTRA_FEATURES
+#define PIN_CONTROL_STORE_VALUES
+#define PIN_CONTROL_RESOLUTION 8
+
+#define PIN_MEASURE_EXTRA_FEATURES
+#define PIN_MEASURE_STORE_VALUES
+#define PIN_MEASURE_RESOLUTION 10
+
 class PinControl {
 public:
   PinControl(uint8_t pin);
   PinControl(uint8_t pin, float v1, float v2);
 
+  static void setResolution(uint8_t bits);
+
   uint8_t getPin();
 
   void setLimits(float v1, float v2);
+  void setInverted(bool inv);
 
-  void set(bool state);
-  void pwm(uint8_t pwm);
+  void digitalW(bool value);
+  void analogW(uint32_t value);
   void control(float value);
 
   #if defined(PIN_CONTROL_EXTRA_FEATURES)
@@ -175,23 +181,26 @@ public:
   #endif
 
   #if defined(PIN_CONTROL_STORE_VALUES)
-  bool last_set();
-  uint8_t last_pwm();
-  float last_control();
+  bool lastDigital();
+  uint32_t lastAnalog();
+  float lastControl();
   #endif
 
 private:
+  inline static uint8_t bres = PIN_CONTROL_RESOLUTION;
+
   uint8_t pin;
   float v1;
   float v2;
+  bool inv;
 
   #if defined(PIN_CONTROL_EXTRA_FEATURES)
   PID *pid;
   #endif
 
   #if defined(PIN_CONTROL_STORE_VALUES)
-  bool set_;
-  uint8_t pwm_;
+  bool d;
+  uint32_t a;
   #endif
 };
 
@@ -201,12 +210,15 @@ public:
   PinMeasure(uint8_t pin, bool pullup = false);
   PinMeasure(uint8_t pin, float v1, float v2, bool pullup = false);
   
+  static void setResolution(uint8_t bits);
+
   uint8_t getPin();
   
   void setLimits(float v1, float v2);
+  void setInverted(bool inv);
 
-  bool state();
-  uint16_t value();
+  bool digitalR();
+  uint32_t analogR();
   float measure();
 
   #if defined(PIN_MEASURE_EXTRA_FEATURES)
@@ -218,23 +230,26 @@ public:
   #endif
 
   #if defined(PIN_MEASURE_STORE_VALUES)
-  bool last_state();
-  uint16_t last_value();
-  float last_measure();
+  bool lastDigital();
+  uint32_t lastAnalog();
+  float lastMeasure();
   #endif
 
 private:
+  inline static uint8_t bres = PIN_MEASURE_RESOLUTION;
+
   uint8_t pin;
   float v1;
   float v2;
+  bool inv;
 
   #if defined(PIN_MEASURE_EXTRA_FEATURES)
   Filter* fil;
   #endif
 
   #if defined(PIN_MEASURE_STORE_VALUES)
-  bool state_;
-  uint16_t value_;
+  bool d;
+  uint32_t a;
   #endif
 };
 
@@ -243,13 +258,13 @@ private:
 // PWM
 // ==================================================
 
-#if defined(UNO) || defined(MEGA)
+#if defined(ARDUINO_AVR_UNO) || defined(ARDUINO_AVR_MEGA2560)
 class PWMfreq {
 public:
   PWMfreq() = delete;
   ~PWMfreq() = delete;
 
-#if defined(UNO)
+#if defined(ARDUINO_AVR_UNO)
   enum class UnoTimer0 : unsigned char{   // D5 & D6
     FREQ_62500_00 = 0b00000001, // set timer 0 divisor to     1 for PWM frequency of 62500.00 Hz
     FREQ_7812_50  = 0b00000010, // set timer 0 divisor to     8 for PWM frequency of  7812.50 Hz
@@ -277,7 +292,7 @@ public:
   };
 #endif
 
-#if defined(MEGA)
+#if defined(ARDUINO_AVR_MEGA2560)
   enum class MegaTimer0 : unsigned char{   // D4 & D13
     FREQ_62500_00 = 0b00000001, // set timer 0 divisor to     1 for PWM frequency of 62500.00 Hz
     FREQ_7812_50  = 0b00000010, // set timer 0 divisor to     8 for PWM frequency of  7812.50 Hz
@@ -331,13 +346,13 @@ public:
 
   //NOTE: Changing timer 0 affects millis() and delay!
 
-#if defined(UNO)
+#if defined(ARDUINO_AVR_UNO)
   static void set(UnoTimer0 freq);
   static void set(UnoTimer1 freq);
   static void set(UnoTimer2 freq);
 #endif
 
-#if defined(MEGA)
+#if defined(ARDUINO_AVR_MEGA2560)
   static void set(MegaTimer0 freq);
   static void set(MegaTimer1 freq);
   static void set(MegaTimer2 freq);
@@ -346,6 +361,7 @@ public:
   static void set(MegaTimer5 freq);
 #endif
 };
+
 #endif
 
 

@@ -10,7 +10,6 @@ Timer	KEYWORD1
 PinControl	KEYWORD1
 PinMeasure	KEYWORD1
 PWMfreq	KEYWORD1
-SerialComm	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
