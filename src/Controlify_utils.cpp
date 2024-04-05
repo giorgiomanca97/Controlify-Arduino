@@ -6,16 +6,11 @@
 // ==================================================
 
 float remap(float v, float a1, float b1, float a2, float b2, bool clamp) {
-  float res = a2 + (v - a1) / (b1 - a1) * (b2 - a2);
-  if(clamp){
-    if(a2 <= b2) {
-      return fmin(fmax(res, a2), b2);
-    } else {
-      return fmin(fmax(res, b2), a2);
-    }
-  } else {
-    return res;
+  float delta = (v - a1) / (b1 - a1);
+  if(clamp) {
+    delta = fmin(fmax(delta, 0.0f), 1.0f);
   }
+  return a2 + delta * (b2 - a2);
 }
 
 float remap( long v,  long a1,  long b1, float a2, float b2, bool clamp){
@@ -29,12 +24,24 @@ long remap( long v,  long a1,  long b1,  long a2,  long b2, bool clamp){
   return round(remap((float) v, (float) a1, (float) b1, (float) a2, (float) b2, clamp));
 }
 
-void byteToHex(const uint8_t & byte, char & hhex, char & lhex) {
+uint32_t remap(float v, float a, float b, uint8_t bits) {
+  uint32_t val = ((1ul << bits) - 1ul);
+  float delta = fmin(fmax((v - a) / (b - a), 0.0f), 1.0f);
+  return delta * val + 0.5f;
+}
+
+float remap(uint32_t v, uint8_t bits, float a, float b) {
+  uint32_t val = ((1ul << bits) - 1ul);
+  float delta = ((float) v) / ((float) val);
+  return a + delta * (b - a);
+}
+
+void byteToHex(const uint8_t &byte, char &hhex, char &lhex) {
   nibbleToHex((byte & 0b00001111) >> 0, lhex);
   nibbleToHex((byte & 0b11110000) >> 4, hhex);
 }
 
-void nibbleToHex(const uint8_t & nibble, char & hex) {
+void nibbleToHex(const uint8_t &nibble, char &hex) {
   switch(nibble) {
     case 0u:
       hex = '0';

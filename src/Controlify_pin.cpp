@@ -19,7 +19,7 @@ PinControl::PinControl(uint8_t pin, float v1, float v2){
 
 void PinControl::setResolution(uint8_t bits) {
   if(bits >= 1 && bits <= 32) {
-    bres = bits; 
+    bres = bits;
   }
 }
 
@@ -43,19 +43,29 @@ void PinControl::digitalW(bool value){
   d = value;
   a = value ? ((1l << bres) - 1l) : 0ul;
   #endif
-  digitalWrite(pin, value ? HIGH : LOW);
+  if(inv) {
+    digitalWrite(pin, value ? HIGH : LOW);
+  } else {
+    digitalWrite(pin, value ? LOW : HIGH);
+  }
 }
 
 void PinControl::analogW(uint32_t value){
+  value = value << (32u - bres);
+  value = value >> (32u - bres);
   #if defined(PIN_CONTROL_STORE_VALUES)
-  d = value;
-  a = value >= ((1lu << (bres - 1ul)));
+  a = value;
+  d = value >= ((1lu << (bres - 1ul)));
   #endif
-  analogWrite(pin, value);
+  if(inv) {
+    analogWrite(pin, value);
+  } else {
+    analogWrite(pin, ((1l << bres) - 1l) - value);
+  }
 }
 
 void PinControl::control(float value){
-  analogW(remap(value, v1, v2, 0l, ((1l << bres) - 1l), true));
+  analogW(remap(value, v1, v2, bres));
 }
 
 #if defined(PIN_CONTROL_EXTRA_FEATURES)
@@ -86,7 +96,7 @@ uint32_t PinControl::lastAnalog(){
 }
 
 float PinControl::lastControl(){
-  return remap(a, 0l, ((1l << bres) - 1l), v1, v2);
+  return remap(a, bres, v1, v2);
 }
 #endif
 
@@ -109,7 +119,7 @@ PinMeasure::PinMeasure(uint8_t pin, float v1, float v2, bool pullup){
 
 void PinMeasure::setResolution(uint8_t bits) {
   if(bits >= 1 && bits <= 32) {
-    bres = bits; 
+    bres = bits;
   }
 }
 
@@ -129,27 +139,25 @@ void PinMeasure::setInverted(bool inv){
 }
 
 bool PinMeasure::digitalR(){
+  bool value = digitalRead(pin) == (inv ? LOW : HIGH);
   #if defined(PIN_MEASURE_STORE_VALUES)
-  d = digitalRead(pin) == HIGH;
-  a = d ? ((1lu << bres) - 1ul) : 0ul;
-  return d;
-  #else
-  return digitalRead(pin) == HIGH;
+  d = value;
+  a = value ? ((1lu << bres) - 1ul) : 0ul;
   #endif
+  return value;
 }
 
 uint32_t PinMeasure::analogR(){
+  uint32_t value = inv ? (((1l << bres) - 1l) - analogRead(pin)) : analogRead(pin);
   #if defined(PIN_MEASURE_STORE_VALUES)
-  a = analogRead(pin);
-  d = a >= ((1lu << (bres - 1ul)));
-  return a;
-  #else
-  return analogRead(pin);
+  a = value;
+  d = value >= ((1lu << (bres - 1ul)));
   #endif
+  return value;
 }
 
 float PinMeasure::measure(){
-  return remap((long) analogR(), 0l, ((1l << bres) - 1l), v1, v2);
+  return remap(analogR(), bres, v1, v2);
 }
 
 #if defined(PIN_MEASURE_EXTRA_FEATURES)
@@ -180,6 +188,6 @@ uint32_t PinMeasure::lastAnalog(){
 }
 
 float PinMeasure::lastMeasure(){
-  return remap((long) a, 0l, ((1l << bres) - 1l), v1, v2);
+  return remap(a, bres, v1, v2);
 }
 #endif

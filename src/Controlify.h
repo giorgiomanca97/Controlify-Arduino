@@ -33,8 +33,11 @@
 float remap(float v, float a1, float b1, float a2, float b2, bool clamp = false);
 float remap( long v,  long a1,  long b1, float a2, float b2, bool clamp = false);
 
- long remap(float v, float a1, float b1,  long a2,  long b2, bool clamp = false);
- long remap( long v,  long a1,  long b1,  long a2,  long b2, bool clamp = false);
+long remap(float v, float a1, float b1,  long a2,  long b2, bool clamp = false);
+long remap( long v,  long a1,  long b1,  long a2,  long b2, bool clamp = false);
+
+uint32_t remap(float v, float a, float b, uint8_t bits);
+float remap(uint32_t v, uint8_t bits, float a, float b);
 
 void byteToHex(const uint8_t & byte, char & hhex, char & lhex);
 void nibbleToHex(const uint8_t & nibble, char & hex);
