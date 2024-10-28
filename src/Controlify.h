@@ -42,6 +42,9 @@ float remap(uint32_t v, uint8_t bits, float a, float b);
 void byteToHex(const uint8_t & byte, char & hhex, char & lhex);
 void nibbleToHex(const uint8_t & nibble, char & hex);
 
+float rad2deg(float rad);
+float deg2rad(float deg);
+
 class Timer{
 public:
   Timer();
@@ -51,10 +54,13 @@ public:
   void setup(unsigned long delta);
   void reset(unsigned long time);
   bool check(unsigned long time);
+  unsigned long cycle(unsigned long time, bool regular = true);
 
 private:
   unsigned long time;
   unsigned long delta;
+
+  unsigned long diff(unsigned long time);
 };
 
 

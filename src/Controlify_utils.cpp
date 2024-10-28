@@ -94,6 +94,14 @@ void nibbleToHex(const uint8_t &nibble, char &hex) {
   }
 }
 
+float rad2deg(float rad){
+  return rad / PI * 180.0f;
+}
+
+float deg2rad(float deg){
+  return deg / 180.0f * PI;
+}
+
 
 // ==================================================
 // Timer
@@ -123,6 +131,25 @@ void Timer::reset(unsigned long time){
 }
 
 bool Timer::check(unsigned long time){
+  return diff(time) >= delta;
+}
+
+unsigned long Timer::cycle(unsigned long time, bool regular){
+  unsigned long dt = diff(time);
+  unsigned long count = dt/delta;
+
+  if(count) {
+    if(regular) {
+      this->time += count * delta;
+    } else {
+      this->time = time;
+    }
+  }
+
+  return count;
+}
+
+unsigned long Timer::diff(unsigned long time){
   unsigned long dt;
 
   if(time < this->time){
@@ -132,10 +159,5 @@ bool Timer::check(unsigned long time){
     dt = time - this->time;
   }
 
-  if(dt >= delta){
-    this->time = time;
-    return true;
-  } else {
-    return false;
-  }
+  return dt;
 }
